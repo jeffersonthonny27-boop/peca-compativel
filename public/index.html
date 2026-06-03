@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Peça Compatível</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box}
+    body{font-family:'Barlow',sans-serif;background:#080A0C;color:#A8B8C8;min-height:100vh;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(245,158,11,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(245,158,11,.035) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+
+    /* ── Auth ── */
+    .auth-wrap{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;background:#080A0C}
+    .auth-card{width:100%;max-width:420px;background:#0E1117;border:1px solid #1E2530;border-radius:14px;overflow:hidden;animation:fadeUp .45s cubic-bezier(.22,1,.36,1) both}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    .auth-head{padding:28px 28px 20px;text-align:center;border-bottom:1px solid #1E2530}
+    .auth-title{font-family:'Barlow Condensed',sans-serif;font-size:1.9rem;font-weight:900;color:#E2EAF2;letter-spacing:.04em}
+    .auth-title span{color:#F59E0B}
+    .auth-sub{font-size:.78rem;color:#2E3A4A;margin-top:4px;letter-spacing:.1em;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;font-weight:700}
+    .auth-body{padding:24px 28px}
+    .auth-tabs{display:flex;margin-bottom:20px;background:#161B24;border-radius:8px;padding:3px;gap:3px}
+    .auth-tab{flex:1;padding:8px;border:none;background:transparent;color:#4A5A6A;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s}
+    .auth-tab.on{background:#1E2530;color:#F59E0B}
+    .inp-group{margin-bottom:14px}
+    .inp-label{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#2E3A4A;margin-bottom:5px;display:block}
+    .inp{width:100%;background:#161B24;border:1px solid #2E3A4A;color:#A8B8C8;font-family:'Barlow',sans-serif;font-size:.92rem;padding:10px 14px;border-radius:6px;outline:none;transition:border-color .2s,box-shadow .2s}
+    .inp:focus{border-color:#F59E0B;box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+    .inp::placeholder{color:#2E3A4A}
+    .btn-auth{width:100%;background:linear-gradient(135deg,#F59E0B,#D97706);color:#080A0C;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border:none;border-radius:6px;padding:12px;cursor:pointer;margin-top:6px;transition:filter .15s,transform .15s;box-shadow:0 0 20px rgba(245,158,11,.25)}
+    .btn-auth:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    .btn-auth:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .auth-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:6px;padding:10px 14px;color:#fca5a5;font-size:.82rem;margin-bottom:12px;display:none}
+    .auth-ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:6px;padding:10px 14px;color:#86efac;font-size:.82rem;margin-bottom:12px;display:none}
+    .forgot{text-align:right;margin-top:-8px;margin-bottom:10px}
+    .forgot a{font-size:.78rem;color:#4A5A6A;cursor:pointer;text-decoration:none}
+    .forgot a:hover{color:#F59E0B}
+
+    /* ── App ── */
+    .app-wrap{display:none;position:relative;z-index:10}
+    .topbar{background:#0E1117;border-bottom:1px solid #1E2530;padding:12px 20px;display:flex;align-items:center;justify-content:space-between}
+    .topbar-brand{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:900;color:#E2EAF2;letter-spacing:.04em}
+    .topbar-brand span{color:#F59E0B}
+    .topbar-user{display:flex;align-items:center;gap:10px}
+    .user-pill{font-size:.78rem;color:#4A5A6A;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.08em}
+    .btn-logout{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:6px;padding:5px 12px;color:#fca5a5;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.1em;cursor:pointer;transition:background .15s}
+    .btn-logout:hover{background:rgba(239,68,68,.18)}
+    .main{max-width:680px;margin:0 auto;padding:24px 16px 60px}
+
+    /* ── Form card ── */
+    .form-card{background:#0E1117;border:1px solid #1E2530;border-radius:12px;overflow:hidden;margin-bottom:24px}
+    .form-top{padding:12px 20px;border-bottom:1px solid #1E2530;display:flex;align-items:center;gap:8px}
+    .dot{width:7px;height:7px;border-radius:50%;background:#F59E0B;box-shadow:0 0 6px #F59E0B}
+    .ftop-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#2E3A4A}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:18px}
+    .flabel{font-family:'Barlow Condensed',sans-serif;font-size:.66rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#2E3A4A;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+    .flabel.on{color:#8496AA}
+    .step{width:15px;height:15px;border-radius:50%;background:#1E2530;border:1px solid #2E3A4A;display:inline-flex;align-items:center;justify-content:center;font-size:.58rem;color:#F59E0B;font-weight:800;flex-shrink:0}
+    .flabel.on .step{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.35)}
+    select{appearance:none;-webkit-appearance:none;background:#161B24;border:1px solid #2E3A4A;color:#A8B8C8;font-family:'Barlow',sans-serif;font-size:.86rem;padding:9px 34px 9px 11px;border-radius:6px;width:100%;cursor:pointer;transition:border-color .2s,box-shadow .2s;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23F59E0B' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+    select:focus{outline:none;border-color:#F59E0B;box-shadow:0 0 0 3px rgba(245,158,11,.12)}
+    select:disabled{opacity:.3;cursor:not-allowed}
+    select option{background:#161B24}
+    .btn-buscar{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 18px 18px;width:calc(100% - 36px);background:linear-gradient(135deg,#F59E0B,#D97706);color:#080A0C;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border:none;border-radius:6px;padding:12px;cursor:pointer;transition:transform .15s,box-shadow .15s,filter .15s;box-shadow:0 0 18px rgba(245,158,11,.22)}
+    .btn-buscar:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 24px rgba(245,158,11,.4);filter:brightness(1.07)}
+    .btn-buscar:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+
+    /* ── Result ── */
+    .result-card{background:#0E1117;border:1px solid #1E2530;border-radius:12px;overflow:hidden;animation:slideUp .4s cubic-bezier(.22,1,.36,1) both}
+    @keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    .ref-section{padding:14px 18px;border-bottom:1px solid #1E2530}
+    .sep{display:flex;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.16em;color:#1E2530;text-transform:uppercase;margin-bottom:10px}
+    .sep::before,.sep::after{content:'';flex:1;height:1px;background:#1E2530}
+    .ref-box{background:rgba(245,158,11,.05);border:1px dashed rgba(245,158,11,.22);border-radius:8px;padding:11px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .ref-fab{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4A5A6A;margin-bottom:2px}
+    .ref-code{font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:500;color:#F59E0B;letter-spacing:.05em;cursor:pointer}
+    .btn-copy{margin-left:auto;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:6px;padding:5px 12px;color:#F59E0B;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;cursor:pointer;transition:background .15s;white-space:nowrap}
+    .btn-copy:hover{background:rgba(245,158,11,.18)}
+    .ref-hint{font-size:.7rem;color:#2E3A4A;margin-top:7px}
+    .compare-grid{display:grid;grid-template-columns:1fr 44px 1fr}
+    .side-orig{background:linear-gradient(160deg,#161B24,#191e28);padding:16px;position:relative}
+    .side-orig::after{content:'CARO';position:absolute;top:9px;right:9px;font-family:'Barlow Condensed',sans-serif;font-size:.58rem;font-weight:800;letter-spacing:.14em;color:#2E3A4A;background:#0E1117;border:1px solid #1E2530;padding:1px 5px;border-radius:3px}
+    .side-eq{background:linear-gradient(160deg,#0d1a0e,#101c11);padding:16px;position:relative}
+    .side-eq::after{content:'+ BARATO';position:absolute;top:9px;right:9px;font-family:'Barlow Condensed',sans-serif;font-size:.58rem;font-weight:800;letter-spacing:.14em;color:#22c55e;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.18);padding:1px 5px;border-radius:3px}
+    .side-center{background:#0E1117;border-left:1px solid #1E2530;border-right:1px solid #1E2530;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+    .arrow{font-size:1.3rem;color:#F59E0B;animation:pa 2s ease infinite}
+    @keyframes pa{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.15);opacity:1}}
+    .center-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.52rem;font-weight:700;letter-spacing:.1em;color:#2E3A4A;writing-mode:vertical-rl;transform:rotate(180deg)}
+    .plabel{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#2E3A4A;margin-bottom:5px}
+    .plabel.g{color:#166534}
+    .car-name{font-family:'Barlow Condensed',sans-serif;font-size:.96rem;font-weight:700;color:#E2EAF2;line-height:1.15;margin-bottom:2px}
+    .car-name.g{color:#bbf7d0;font-size:.88rem}
+    .car-ano{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;color:#2E3A4A;margin-bottom:12px}
+    .car-ano.g{color:#166534}
+    .price-orig{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:900;color:#4A5A6A;text-decoration:line-through;text-decoration-color:rgba(74,90,106,.4)}
+    .price-eq{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:900;color:#22c55e}
+    .price-fab{font-size:.7rem;color:#2E3A4A;margin-top:3px}
+    .price-fab.g{color:#166534}
+    .footer-bar{padding:13px 18px;border-top:1px solid #1E2530;background:#090c10;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .eco-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2);border-radius:999px;padding:4px 12px;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:800;color:#22c55e;letter-spacing:.03em}
+    .dica{font-size:.7rem;color:#2E3A4A;max-width:220px;line-height:1.4}
+    .outros-card{margin-top:10px;background:#0E1117;border:1px solid #1E2530;border-radius:12px;padding:14px 18px;animation:slideUp .5s .1s cubic-bezier(.22,1,.36,1) both}
+    .outros-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #0E1117}
+    .outros-row:last-child{border-bottom:none}
+    .outros-name{font-family:'Barlow Condensed',sans-serif;font-size:.88rem;font-weight:600;color:#8496AA}
+    .outros-fab{font-size:.7rem;color:#2E3A4A;margin-left:6px}
+    .outros-price{font-family:'Barlow Condensed',sans-serif;font-size:.88rem;font-weight:700;color:#4A5A6A}
+    .note{text-align:center;font-size:.66rem;color:#1E2530;margin-top:8px}
+    .skeleton{background:linear-gradient(90deg,#161B24 25%,#1E2530 50%,#161B24 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+    @keyframes shimmer{to{background-position:-200% 0}}
+    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#F59E0B;color:#080A0C;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:800;letter-spacing:.06em;padding:8px 20px;border-radius:999px;box-shadow:0 4px 20px rgba(245,158,11,.4);z-index:9999;animation:tin .25s ease,tout .3s ease 1.7s forwards;white-space:nowrap}
+    @keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+    @keyframes tout{to{opacity:0;transform:translateX(-50%) translateY(12px)}}
+  </style>
+</head>
+<body>
+
+<!-- ══ TELA DE AUTH ══ -->
+<div class="auth-wrap" id="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-head">
+      <div style="display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:4px">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div class="auth-title">PEÇA <span>COMPATÍVEL</span></div>
+      </div>
+      <div class="auth-sub">Referência Cruzada Automotiva</div>
+    </div>
+    <div class="auth-body">
+      <div class="auth-tabs">
+        <button class="auth-tab on" id="tab-login" onclick="setTab('login')">Entrar</button>
+        <button class="auth-tab" id="tab-reg" onclick="setTab('registro')">Criar Conta</button>
+      </div>
+
+      <div id="auth-err" class="auth-err"></div>
+      <div id="auth-ok"  class="auth-ok"></div>
+
+      <!-- LOGIN -->
+      <div id="form-login">
+        <div class="inp-group">
+          <label class="inp-label">E-mail</label>
+          <input class="inp" id="l-email" type="email" placeholder="seu@email.com" autocomplete="email"/>
+        </div>
+        <div class="inp-group">
+          <label class="inp-label">Senha</label>
+          <input class="inp" id="l-senha" type="password" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+        <div class="forgot"><a onclick="esqueceuSenha()">Esqueci minha senha</a></div>
+        <button class="btn-auth" id="btn-login" onclick="login()">Entrar no Sistema</button>
+      </div>
+
+      <!-- REGISTRO -->
+      <div id="form-registro" style="display:none">
+        <div class="inp-group">
+          <label class="inp-label">Nome</label>
+          <input class="inp" id="r-nome" type="text" placeholder="Seu nome" autocomplete="name"/>
+        </div>
+        <div class="inp-group">
+          <label class="inp-label">E-mail</label>
+          <input class="inp" id="r-email" type="email" placeholder="seu@email.com" autocomplete="email"/>
+        </div>
+        <div class="inp-group">
+          <label class="inp-label">Senha (mín. 6 caracteres)</label>
+          <input class="inp" id="r-senha" type="password" placeholder="••••••••" autocomplete="new-password"/>
+        </div>
+        <button class="btn-auth" id="btn-reg" onclick="registro()">Criar Conta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP PRINCIPAL ══ -->
+<div class="app-wrap" id="app-wrap">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-brand">PEÇA <span>COMPATÍVEL</span></div>
+    <div class="topbar-user">
+      <span class="user-pill" id="user-name"></span>
+      <button class="btn-logout" onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- Formulário -->
+    <div class="form-card">
+      <div class="form-top">
+        <div class="dot"></div>
+        <div class="ftop-lbl">Diagnóstico de Compatibilidade</div>
+      </div>
+      <div class="form-grid">
+        <div>
+          <div class="flabel on" id="lbl1"><span class="step">1</span> Montadora</div>
+          <select id="s-marca" onchange="onMarca()"><option value="">— Selecione —</option></select>
+        </div>
+        <div>
+          <div class="flabel" id="lbl2"><span class="step">2</span> Modelo</div>
+          <select id="s-modelo" disabled onchange="onModelo()"><option value="">— Primeiro a marca —</option></select>
+        </div>
+        <div>
+          <div class="flabel" id="lbl3"><span class="step">3</span> Ano / Geração</div>
+          <select id="s-ano" disabled onchange="onAno()"><option value="">— Primeiro o modelo —</option></select>
+        </div>
+        <div>
+          <div class="flabel" id="lbl4"><span class="step">4</span> Peça</div>
+          <select id="s-peca" disabled onchange="onPeca()"><option value="">— Primeiro o ano —</option></select>
+        </div>
+      </div>
+      <button class="btn-buscar" id="btn-buscar" disabled onclick="buscar()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Buscar Compatibilidade
+      </button>
+    </div>
+
+    <!-- Resultado -->
+    <div id="resultado" style="display:none"></div>
+
+  </div>
+</div>
+
+<script>
+const API = '';   // mesmo origem — server.js serve o HTML
+let TOKEN = localStorage.getItem('autoref_token') || '';
+let USER  = JSON.parse(localStorage.getItem('autoref_user') || 'null');
+
+// ── utilitários ──
+const $ = id => document.getElementById(id);
+const fmt = v => v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+
+function showErr(msg){ const e=$('auth-err'); e.textContent=msg; e.style.display='block'; $('auth-ok').style.display='none'; }
+function showOk(msg) { const o=$('auth-ok');  o.textContent=msg; o.style.display='block'; $('auth-err').style.display='none'; }
+function hideMsg(){ $('auth-err').style.display='none'; $('auth-ok').style.display='none'; }
+
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),2200);
+}
+
+async function apiFetch(path, opts={}){
+  const headers = {'Content-Type':'application/json'};
+  if(TOKEN) headers['Authorization'] = 'Bearer '+TOKEN;
+  const r = await fetch(API+path, {...opts, headers});
+  const d = await r.json();
+  return {ok: r.ok, status: r.status, data: d};
+}
+
+// ── tabs ──
+function setTab(tab){
+  hideMsg();
+  $('form-login').style.display    = tab==='login'   ? '' : 'none';
+  $('form-registro').style.display = tab==='registro'? '' : 'none';
+  $('tab-login').classList.toggle('on', tab==='login');
+  $('tab-reg').classList.toggle('on',   tab==='registro');
+}
+
+// ── auth ──
+async function login(){
+  const email=$('l-email').value.trim(), senha=$('l-senha').value;
+  if(!email||!senha){ showErr('Preencha e-mail e senha.'); return; }
+  const btn=$('btn-login'); btn.disabled=true; btn.textContent='Entrando...';
+  hideMsg();
+  const {ok,data} = await apiFetch('/api/auth/login',{method:'POST',body:JSON.stringify({email,senha})});
+  btn.disabled=false; btn.textContent='Entrar no Sistema';
+  if(!ok){ showErr(data.erro||'Erro ao fazer login.'); return; }
+  TOKEN = data.token;
+  USER  = data.usuario;
+  localStorage.setItem('autoref_token', TOKEN);
+  localStorage.setItem('autoref_user',  JSON.stringify(USER));
+  entrarNoApp();
+}
+
+async function registro(){
+  const nome=$('r-nome').value.trim(), email=$('r-email').value.trim(), senha=$('r-senha').value;
+  if(!nome||!email||!senha){ showErr('Preencha todos os campos.'); return; }
+  const btn=$('btn-reg'); btn.disabled=true; btn.textContent='Criando conta...';
+  hideMsg();
+  const {ok,data} = await apiFetch('/api/auth/registro',{method:'POST',body:JSON.stringify({nome,email,senha})});
+  btn.disabled=false; btn.textContent='Criar Conta';
+  if(!ok){ showErr(data.erro||'Erro ao criar conta.'); return; }
+  showOk('Conta criada! Faça login para continuar.');
+  setTab('login');
+  $('l-email').value=email;
+}
+
+async function logout(){
+  await apiFetch('/api/auth/logout',{method:'POST'});
+  TOKEN=''; USER=null;
+  localStorage.removeItem('autoref_token');
+  localStorage.removeItem('autoref_user');
+  $('app-wrap').style.display='none';
+  $('auth-wrap').style.display='flex';
+  resetSelects();
+}
+
+async function esqueceuSenha(){
+  const email=$('l-email').value.trim();
+  if(!email){ showErr('Digite seu e-mail acima primeiro.'); return; }
+  const {ok,data} = await apiFetch('/api/auth/recuperar-senha',{method:'POST',body:JSON.stringify({email})});
+  ok ? showOk(data.mensagem) : showErr(data.erro);
+}
+
+function entrarNoApp(){
+  $('auth-wrap').style.display='none';
+  $('app-wrap').style.display='block';
+  $('user-name').textContent = USER?.nome || USER?.email || '';
+  carregarMarcas();
+}
+
+// verifica se já tem token salvo
+(async()=>{
+  if(TOKEN && USER){
+    const {ok} = await apiFetch('/api/marcas');
+    if(ok){ entrarNoApp(); return; }
+    // token expirado
+    TOKEN=''; USER=null;
+    localStorage.removeItem('autoref_token');
+    localStorage.removeItem('autoref_user');
+  }
+})();
+
+// ── selects encadeados ──
+function activate(id){
+  document.querySelectorAll('.flabel').forEach(e=>e.classList.remove('on'));
+  $(id).classList.add('on');
+}
+function fillSel(sel, opts, placeholder){
+  sel.innerHTML=`<option value="">${placeholder}</option>`;
+  opts.forEach(o=>{ const el=document.createElement('option'); el.value=el.textContent=o; sel.appendChild(el); });
+  sel.disabled=false;
+}
+function resetSelects(){
+  ['s-modelo','s-ano','s-peca'].forEach(id=>{ $(id).innerHTML='<option value="">—</option>'; $(id).disabled=true; });
+  $('btn-buscar').disabled=true;
+  $('resultado').style.display='none';
+}
+
+async function carregarMarcas(){
+  const {ok,data} = await apiFetch('/api/marcas');
+  if(!ok) return;
+  fillSel($('s-marca'), data.dados, '— Selecione —');
+}
+
+async function onMarca(){
+  const m=$('s-marca').value;
+  resetSelects(); activate('lbl1');
+  if(!m) return;
+  activate('lbl2');
+  $('s-modelo').disabled=true; $('s-modelo').innerHTML='<option>Carregando...</option>';
+  const {ok,data} = await apiFetch(`/api/modelos?marca=${encodeURIComponent(m)}`);
+  if(!ok){ $('s-modelo').innerHTML='<option>Erro</option>'; return; }
+  fillSel($('s-modelo'), data.dados, '— Selecione —');
+}
+
+async function onModelo(){
+  const m=$('s-marca').value, mo=$('s-modelo').value;
+  $('s-ano').innerHTML='<option>—</option>'; $('s-ano').disabled=true;
+  $('s-peca').innerHTML='<option>—</option>'; $('s-peca').disabled=true;
+  $('btn-buscar').disabled=true; $('resultado').style.display='none';
+  if(!mo){ activate('lbl2'); return; }
+  activate('lbl3');
+  $('s-ano').innerHTML='<option>Carregando...</option>';
+  const {ok,data} = await apiFetch(`/api/anos?marca=${encodeURIComponent(m)}&modelo=${encodeURIComponent(mo)}`);
+  if(!ok){ $('s-ano').innerHTML='<option>Erro</option>'; return; }
+  fillSel($('s-ano'), data.dados, '— Selecione —');
+}
+
+async function onAno(){
+  const m=$('s-marca').value, mo=$('s-modelo').value, a=$('s-ano').value;
+  $('s-peca').innerHTML='<option>—</option>'; $('s-peca').disabled=true;
+  $('btn-buscar').disabled=true; $('resultado').style.display='none';
+  if(!a){ activate('lbl3'); return; }
+  activate('lbl4');
+  $('s-peca').innerHTML='<option>Carregando...</option>';
+  const {ok,data} = await apiFetch(`/api/pecas?marca=${encodeURIComponent(m)}&modelo=${encodeURIComponent(mo)}&ano=${encodeURIComponent(a)}`);
+  if(!ok){ $('s-peca').innerHTML='<option>Erro</option>'; return; }
+  const nomes = data.dados.map(p=>p.peca_nome);
+  fillSel($('s-peca'), nomes, '— Selecione —');
+}
+
+function onPeca(){ $('btn-buscar').disabled=!$('s-peca').value; $('resultado').style.display='none'; }
+
+// ── busca principal ──
+async function buscar(){
+  const m=$('s-marca').value, mo=$('s-modelo').value, a=$('s-ano').value, p=$('s-peca').value;
+  if(!m||!mo||!a||!p) return;
+  const area=$('resultado');
+  area.style.display='block';
+  area.innerHTML=`<div class="result-card" style="padding:20px">
+    <div class="skeleton" style="height:14px;width:160px;margin-bottom:10px"></div>
+    <div class="skeleton" style="height:36px;width:220px;margin-bottom:18px"></div>
+    <div style="display:grid;grid-template-columns:1fr 44px 1fr;gap:0">
+      <div style="padding:16px"><div class="skeleton" style="height:60px"></div></div>
+      <div></div>
+      <div style="padding:16px"><div class="skeleton" style="height:60px"></div></div>
+    </div></div>`;
+  $('btn-buscar').disabled=true;
+  area.scrollIntoView({behavior:'smooth',block:'start'});
+
+  const {ok,data} = await apiFetch(`/api/buscar?marca=${encodeURIComponent(m)}&modelo=${encodeURIComponent(mo)}&ano=${encodeURIComponent(a)}&peca=${encodeURIComponent(p)}`);
+  $('btn-buscar').disabled=false;
+  if(!ok){ area.innerHTML=`<div class="result-card" style="padding:24px;text-align:center"><div style="font-size:1.8rem;margin-bottom:8px">⚠️</div><div style="font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;color:#E2EAF2;margin-bottom:4px">Não foi possível buscar</div><p style="font-size:.82rem;color:#4A5A6A">${data.erro}</p></div>`; return; }
+  area.innerHTML = renderResult(data);
+}
+
+function renderResult(data){
+  const {consulta,resumo,resultados}=data;
+  const vc = resultados.find(r=>r.e_veiculo_consultado)||resultados[0];
+  const mb = resultados.find(r=>r.e_mais_barato)||resultados[0];
+  const outros = resultados.filter(r=>!r.e_veiculo_consultado&&!r.e_mais_barato);
+  const mesmo = vc.montadora===mb.montadora&&vc.carro===mb.carro&&vc.ano===mb.ano;
+  const precoEq = mesmo ? mb.preco_equivalente : mb.preco_original;
+  const nomEq   = mesmo ? mb.carro_equivalente_barato : `${mb.montadora} ${mb.carro} ${mb.ano}`;
+  const eco     = mesmo ? mb.economia_percentual : resumo.economia_maxima_percentual;
+
+  const outrosHtml = outros.length ? `
+    <div class="outros-card">
+      <div class="sep">Outros veículos com o mesmo código</div>
+      ${outros.map(r=>`<div class="outros-row"><span><span class="outros-name">${r.montadora} ${r.carro} ${r.ano}</span><span class="outros-fab">${r.fabricante}</span></span><span class="outros-price">${fmt(r.preco_original)}</span></div>`).join('')}
+      <div class="note">Todos usam exatamente a mesma peça — código ${consulta.codigo_referencia}</div>
+    </div>` : '';
+
+  return `
+  <div class="result-card">
+    <div class="ref-section">
+      <div class="sep">Código de Referência Universal</div>
+      <div class="ref-box">
+        <div>
+          <div class="ref-fab">Ref. ${mb.fabricante}</div>
+          <div class="ref-code" onclick="copyCode('${consulta.codigo_referencia}')">${consulta.codigo_referencia}</div>
+        </div>
+        <button class="btn-copy" onclick="copyCode('${consulta.codigo_referencia}')">⧉ Copiar</button>
+      </div>
+      <div class="ref-hint">Este código é idêntico nos dois veículos — a peça é fisicamente a mesma.</div>
+    </div>
+    <div class="compare-grid">
+      <div class="side-orig">
+        <div class="plabel">Seu Veículo</div>
+        <div class="car-name">${vc.montadora} ${vc.carro}</div>
+        <div class="car-ano">${vc.ano}</div>
+        <div class="plabel">Preço no balcão</div>
+        <div class="price-orig">${fmt(vc.preco_original)}</div>
+        <div class="price-fab">${vc.fabricante}</div>
+      </div>
+      <div class="side-center">
+        <div class="arrow">→</div>
+        <div class="center-lbl">PEÇA IGUAL</div>
+      </div>
+      <div class="side-eq">
+        <div class="plabel g">Peça pelo Equivalente</div>
+        <div class="car-name g">${nomEq}</div>
+        <div class="car-ano g">Peça pelo modelo acima</div>
+        <div class="plabel g">Preço equivalente</div>
+        <div class="price-eq">${fmt(precoEq)}</div>
+        <div class="price-fab g">${mb.fabricante} — mesma qualidade</div>
+      </div>
+    </div>
+    <div class="footer-bar">
+      <div>
+        <div class="plabel" style="margin-bottom:5px">Economia estimada</div>
+        <div class="eco-badge">▼ ${eco}% — ${fmt(vc.preco_original - precoEq)}</div>
+      </div>
+      <div class="dica">💡 ${resumo.dica}</div>
+    </div>
+  </div>
+  ${outrosHtml}
+  <div class="note" style="margin-top:8px">Preços de referência — confirme com seu fornecedor.</div>`;
+}
+
+function copyCode(code){
+  navigator.clipboard.writeText(code).catch(()=>{});
+  toast(`✓ Código ${code} copiado!`);
+}
+</script>
+</body>
+</html>
